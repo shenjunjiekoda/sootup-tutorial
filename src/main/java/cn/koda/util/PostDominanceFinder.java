@@ -48,15 +48,20 @@ public class PostDominanceFinder {
     // we're locked into providing a List<BasicBlock<?>>, not a List<? extends BasicBlock<?>>, so
     // we'll use the block iterator directly (which provides this type) rather than
     // #getBlocksSorted.
-    List<BasicBlock<?>> collect = StreamSupport.stream(
+//    List<BasicBlock<?>> collect = StreamSupport.stream(
+//                    Spliterators.spliteratorUnknownSize(
+//                            blockGraph.getBlockIterator(), Spliterator.ORDERED),
+//                    false)
+//            .collect(Collectors.toList());
+//            blocks = new ArrayList<>();
+//    for (int i = collect.size() - 1; i >= 0; i -- ) {
+//      blocks.add(collect.get(i));
+//    }
+    blocks = StreamSupport.stream(
                     Spliterators.spliteratorUnknownSize(
                             blockGraph.getBlockIterator(), Spliterator.ORDERED),
                     false)
             .collect(Collectors.toList());
-            blocks = new ArrayList<>();
-    for (int i = collect.size() - 1; i >= 0; i -- ) {
-      blocks.add(collect.get(i));
-    }
 
     final BasicBlock<?> startingStmtBlock = blockGraph.getBlockOf(blockGraph.getTails().get(0));
     // assign each block a integer id. The starting block must have id 0; rely on
@@ -115,7 +120,7 @@ public class PostDominanceFinder {
         int blockId = blockToIdx.get(block);
         for (BasicBlock<?> pred : preds) {
           int predId = blockToIdx.get(pred);
-          while (predId != doms[blockId]) {
+          while (predId != -1 && predId != doms[blockId]) {
             domFrontiers[predId].add(blockId);
             predId = doms[predId];
           }

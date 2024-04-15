@@ -149,12 +149,15 @@ public class Example5 {
                     AbstractConditionExpr cond = ((JIfStmt) s).getCondition();
                     stk.push(new Pair<>(cond, eval(cond, in)));
                     BasicBlock<?> curBlock = graph.getBlockOf(s);
-                    imPostDomStmt = postDom.getImmediateDominator(curBlock).getHead();
-                    // find the control body stmt hack.
-                    List<MutableBasicBlock> successors = (List<MutableBasicBlock>)curBlock.getSuccessors();
-                    stmtInControlBody = successors.stream()
-                            .filter(bb -> !bb.getHead().equals(imPostDomStmt))
-                            .collect(Collectors.toList()).get(0).getHead();
+                    BasicBlock<?> immediateDominator = postDom.getImmediateDominator(curBlock);
+                    if (immediateDominator != null ) {
+                        imPostDomStmt = immediateDominator.getHead();
+                        // find the control body stmt hack.
+                        List<MutableBasicBlock> successors = (List<MutableBasicBlock>)curBlock.getSuccessors();
+                        stmtInControlBody = successors.stream()
+                                .filter(bb -> !bb.getHead().equals(imPostDomStmt))
+                                .collect(Collectors.toList()).get(0).getHead();
+                    }
                     visitControlBodyStmt = false;
                     if (!stk.isEmpty()) {
                         condVal = TaintDom.getUntainted();
