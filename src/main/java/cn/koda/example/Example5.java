@@ -79,10 +79,12 @@ public class Example5 {
         boolean visitControlBodyStmt;
         Stmt stmtInControlBody;
 
+        Set<String> issues = new HashSet<>();
+
         /**
          * Construct the analysis from StmtGraph.
          *
-         * @param graph
+         * @param cfg
          */
         public <B extends BasicBlock<B>> InfoFlowAnalysis(StmtGraph<B> cfg, boolean considerImplicitFlow) {
             super(cfg);
@@ -115,9 +117,12 @@ public class Example5 {
             return name.contains("internet") || name.contains("print");
         }
 
-        void report(Stmt s) {
-            System.out.println("Find security issue in: " + s);
-            System.out.println("Location: " + s.getPositionInfo() + "\n");
+        void diag(Stmt s) {
+            issues.add(s + ", loc: " + s.getPositionInfo());
+        }
+
+        void report() {
+            issues.forEach(System.out::println);
         }
 
         TaintDom eval(Value v, Map<LValue, TaintDom> in) {
@@ -196,7 +201,7 @@ public class Example5 {
                                 return val.isTainted;
                             });
                     if (isTainted) {
-                        report(s);
+                        diag(s);
                     }
                 }
             }
@@ -256,7 +261,7 @@ public class Example5 {
         StmtGraph<?> cfg = sootMethod.getBody().getStmtGraph();
         InfoFlowAnalysis analysis = new InfoFlowAnalysis(cfg, true);
         analysis.run();
-
+        analysis.report();
     }
 
 }
